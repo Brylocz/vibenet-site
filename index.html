@@ -19,15 +19,32 @@
   .hero h1 { font-size: clamp(28px, 8vw, 48px); }
   .hero-sub { font-size: 14px; }
   .nav-links { display: none; } /* możesz dodać hamburger menu */
-}
-
   .hero-inner { max-width: 760px; margin: 0 auto; }
 .app-mockup { width: calc(100% - 32px); height: 160px; }
+}
+
+@media (max-width: 600px) {
+  .product-hero {
+    grid-template-columns: 1fr; /* jeden pod drugim */
+    gap: 32px;                  /* odstęp między obrazem a tekstem */
+  }
+
+  .product-hero img, .product-hero .hero-text {
+    width: 100%;                 /* zajmuje całą szerokość kontenera */
+    height: auto;                /* automatyczna wysokość dla obrazów */
+  }
+}
   
 
 @media (max-width: 600px) {
   .section { padding: 48px 16px; }
   .cta-banner { margin: 0 16px 48px; padding: 32px; }
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 48px 16px;
+  }
 }
 
 @media (max-width: 768px) {
