@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibenet — Narzedzia dla profesjonalistow IT</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #080810;
+  --surface:   #10101a;
+  --surface2:  #18182a;
+  --surface3:  #22223a;
+  --border:    #252538;
+  --border2:   #34345a;
+  --blue:      #4f8ef7;
+  --blue-dim:  rgba(79,142,247,0.1);
+  --blue-glow: rgba(79,142,247,0.25);
+  --green:     #34c472;
+  --green-dim: rgba(52,196,114,0.1);
+  --amber:     #f5a623;
+  --amber-dim: rgba(245,166,35,0.1);
+  --purple:    #a78bfa;
+  --purple-dim:rgba(167,139,250,0.1);
+  --text:      #e8e8f4;
+  --text2:     #8888aa;
+  --muted:     #44446a;
+  --font: 'Sora', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── NOISE TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.5;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 64px; height: 64px;
+  background: rgba(8,8,16,0.85);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 20px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer;
+}
+.nav-logo-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo-mark svg { width: 16px; height: 16px; color: #fff; }
+.nav-logo span { color: var(--blue); }
+
+.nav-links { display: flex; gap: 4px; }
+.nav-links a {
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  padding: 7px 14px; border-radius: 7px; text-decoration: none;
+  transition: all 0.15s; cursor: pointer;
+}
+.nav-links a:hover { color: var(--text); background: var(--surface2); }
+.nav-links a.active { color: var(--text); }
+
+.nav-cta {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 18px; background: var(--blue); color: #fff;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.15s; text-decoration: none;
+}
+.nav-cta:hover { background: #3a7aee; box-shadow: 0 4px 20px var(--blue-glow); }
+
+/* ── PAGES ── */
+.page { display: none; padding-top: 64px; }
+.page.active { display: block; }
+
+/* ══════════════════════════════════
+   HOME PAGE
+══════════════════════════════════ */
+
+/* HERO */
+.hero {
+  position: relative; min-height: calc(100vh - 64px);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 80px 24px;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,142,247,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(167,139,250,0.07) 0%, transparent 60%);
+}
+
+/* grid lines */
+.hero-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.hero-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--blue-dim); border: 1px solid rgba(79,142,247,0.2);
+  color: var(--blue); border-radius: 100px; padding: 6px 16px;
+  font-size: 11px; font-family: var(--mono); letter-spacing: 1.5px;
+  text-transform: uppercase; margin-bottom: 28px;
+  animation: fadeUp 0.6s ease both;
+}
+.hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); animation: blink 2s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero h1 {
+  font-size: clamp(40px, 6vw, 80px); font-weight: 800;
+  line-height: 1.0; letter-spacing: -3px; margin-bottom: 22px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero h1 .hi { color: var(--blue); }
+.hero h1 .hi2 {
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.hero-sub {
+  font-size: 16px; color: var(--text2); line-height: 1.7; max-width: 500px;
+  margin: 0 auto 40px; font-weight: 400;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-actions {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+
+.btn-hero-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 28px; background: var(--blue); color: #fff;
+  border-radius: 10px; font-size: 14px; font-weight: 700;
+  cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
+}
+.btn-hero-primary:hover { background: #3a7aee; transform: translateY(-1px); box-shadow: 0 8px 28px var(--blue-glow); }
+.btn-hero-primary svg { width: 15px; height: 15px; }
+
+.btn-hero-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; background: none; color: var(--text2);
+  border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border2); transition: all 0.15s; text-decoration: none;
+}
+.btn-hero-secondary:hover { color: var(--text); border-color: var(--text2); }
+
+.hero-stats {
+  display: flex; justify-content: center; gap: 48px; margin-top: 72px;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+.hero-stat-num { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: var(--text); }
+.hero-stat-label { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+
+/* PRODUCTS SECTION */
+.section { padding: 96px 64px; position: relative; z-index: 1; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+
+.section-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+}
+.section-tag::before { content: ''; width: 20px; height: 1px; background: var(--blue); }
+
+.section-title {
+  font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -1.5px;
+  margin-bottom: 12px; line-height: 1.1;
+}
+.section-sub { font-size: 15px; color: var(--text2); max-width: 480px; line-height: 1.65; margin-bottom: 56px; }
+
+/* PRODUCT CARDS */
+.products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.product-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; cursor: pointer;
+  transition: all 0.25s; position: relative;
+}
+.product-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+
+.product-card-hero {
+  height: 200px; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* App screenshot mockup inside the card */
+.app-mockup {
+  width: calc(100% - 32px); height: 160px;
+  background: #0f0f12; border-radius: 10px;
+  border: 1px solid #2e2e3a; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  position: relative; z-index: 1;
+  font-family: var(--mono); font-size: 8px;
+}
+
+.mockup-topbar {
+  height: 20px; background: #18181f; border-bottom: 1px solid #2e2e3a;
+  display: flex; align-items: center; padding: 0 8px; gap: 4px;
+}
+.mockup-dot { width: 5px; height: 5px; border-radius: 50%; }
+.mockup-dot.r { background: #f25f5c; }
+.mockup-dot.y { background: #f5a623; }
+.mockup-dot.g { background: #34c472; }
+.mockup-title-bar { flex: 1; font-size: 8px; color: #5a5a72; text-align: center; letter-spacing: 0.5px; }
+
+.mockup-body { padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+
+.mockup-step-row {
+  display: flex; align-items: center; gap: 5px;
+}
+.mockup-circle {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1px solid #4f8ef7; color: #4f8ef7;
+  font-size: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mockup-circle.done { background: #34c472; border-color: #34c472; color: #000; }
+.mockup-line-h { flex: 1; height: 1px; background: #2e2e3a; }
+.mockup-label { font-size: 7px; color: #5a5a72; white-space: nowrap; }
+
+.mockup-device-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 2px; }
+.mockup-device-box {
+  border: 1px solid #2e2e3a; border-radius: 5px; padding: 6px;
+  background: #22222c; display: flex; flex-direction: column; gap: 3px;
+}
+.mockup-device-box.sel { border-color: #34c472; background: rgba(52,196,114,0.08); }
+.mockup-device-box.sel2 { border-color: #7b7ef5; background: rgba(123,126,245,0.08); }
+.mockup-device-name { font-size: 8px; font-weight: 700; }
+.mockup-device-name.and { color: #34c472; }
+.mockup-device-name.ios2 { color: #7b7ef5; }
+.mockup-device-sub { font-size: 6px; color: #5a5a72; }
+.mockup-badge-row { display: flex; gap: 3px; margin-top: 2px; }
+.mockup-stat { background: #2c2c38; border-radius: 3px; padding: 2px 4px; font-size: 6px; color: #9090a8; }
+.mockup-stat.g { color: #34c472; background: rgba(52,196,114,0.12); }
+.mockup-stat.r { color: #f25f5c; background: rgba(242,95,92,0.12); }
+
+.mockup-progress-wrap { background: #22222c; border-radius: 3px; height: 3px; margin-top: 4px; }
+.mockup-progress-fill { height: 100%; background: #4f8ef7; border-radius: 3px; width: 68%; }
+
+.mockup-row { height: 7px; border-radius: 3px; background: #22222c; }
+.mockup-row.short { width: 60%; }
+
+/* placeholder mockups for other products */
+.placeholder-mockup {
+  width: calc(100% - 32px); height: 160px;
+  background: #0f0f12; border-radius: 10px;
+  border: 1px solid #2e2e3a;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ph-topbar {
+  height: 20px; background: #18181f; border-bottom: 1px solid #2e2e3a;
+  display: flex; align-items: center; padding: 0 8px; gap: 4px;
+}
+.ph-body { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 6px; justify-content: center; align-items: center; }
+.ph-icon { width: 32px; height: 32px; border-radius: 8px; border: 1px dashed #2e2e3a; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+.ph-icon svg { width: 14px; height: 14px; color: #34345a; }
+.ph-label { font-size: 9px; font-family: var(--mono); color: #34345a; letter-spacing: 1px; }
+
+.product-card-bg {
+  position: absolute; inset: 0;
+  transition: opacity 0.3s;
+}
+.product-card.recovery .product-card-bg { background: radial-gradient(ellipse at top, rgba(52,196,114,0.06), transparent 70%); }
+.product-card.backup .product-card-bg { background: radial-gradient(ellipse at top, rgba(79,142,247,0.06), transparent 70%); }
+.product-card.monitor .product-card-bg { background: radial-gradient(ellipse at top, rgba(167,139,250,0.06), transparent 70%); }
+
+.product-card-body { padding: 20px 22px 22px; }
+
+.product-card-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 4px; margin-bottom: 10px;
+}
+.product-card-tag.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,196,114,0.2); }
+.product-card-tag.blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(79,142,247,0.2); }
+.product-card-tag.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.product-card-tag.amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+
+.product-card-name { font-size: 17px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 6px; }
+.product-card-desc { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
+
+.product-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.product-card-platforms { display: flex; gap: 5px; }
+.platform-tag {
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  background: var(--surface3); padding: 2px 7px; border-radius: 3px; letter-spacing: 0.5px;
+}
+.product-card-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--text2);
+  background: none; border: 1px solid var(--border2); border-radius: 7px;
+  padding: 6px 12px; cursor: pointer; transition: all 0.15s; text-decoration: none;
+}
+.product-card-btn:hover { color: var(--text); border-color: var(--text2); }
+.product-card-btn svg { width: 11px; height: 11px; }
+
+/* FEATURES */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.feature-item { background: var(--surface); padding: 28px; transition: background 0.15s; }
+.feature-item:hover { background: var(--surface2); }
+.feature-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; border: 1px solid var(--border2); }
+.feature-icon svg { width: 17px; height: 17px; }
+.feature-icon.blue { background: var(--blue-dim); border-color: rgba(79,142,247,0.2); }
+.feature-icon.blue svg { color: var(--blue); }
+.feature-icon.green { background: var(--green-dim); border-color: rgba(52,196,114,0.2); }
+.feature-icon.green svg { color: var(--green); }
+.feature-icon.amber { background: var(--amber-dim); border-color: rgba(245,166,35,0.2); }
+.feature-icon.amber svg { color: var(--amber); }
+.feature-icon.purple { background: var(--purple-dim); border-color: rgba(167,139,250,0.2); }
+.feature-icon.purple svg { color: var(--purple); }
+.feature-name { font-size: 14px; font-weight: 700; margin-bottom: 5px; letter-spacing: -0.2px; }
+.feature-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+/* CTA BANNER */
+.cta-banner {
+  margin: 0 64px 96px; border-radius: 20px; padding: 64px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid var(--border2); position: relative; overflow: hidden; z-index: 1;
+}
+.cta-banner::before {
+  content: ''; position: absolute; top: -60px; right: -60px;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,142,247,0.08), transparent 70%);
+}
+.cta-banner-inner { position: relative; z-index: 1; max-width: 560px; }
+.cta-banner h2 { font-size: 36px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; }
+.cta-banner p { font-size: 15px; color: var(--text2); line-height: 1.65; margin-bottom: 28px; }
+.cta-banner-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border); padding: 40px 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 1;
+}
+.footer-left { font-size: 13px; color: var(--muted); }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color 0.15s; cursor: pointer; }
+.footer-links a:hover { color: var(--text); }
+
+/* ══════════════════════════════════
+   PRODUCT PAGE (Recovery)
+══════════════════════════════════ */
+.product-page { max-width: 1100px; margin: 0 auto; padding: 64px 64px 96px; }
+
+.product-hero {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px;
+  align-items: center; margin-bottom: 80px;
+}
+
+.product-hero-left {}
+
+.product-hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green-dim); border: 1px solid rgba(52,196,114,0.2);
+  color: var(--green); border-radius: 6px; padding: 4px 10px;
+  font-size: 10px; font-family: var(--mono); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 20px;
+}
+.product-hero-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+
+.product-hero h1 { font-size: clamp(32px, 4vw, 48px); font-weight: 800; letter-spacing: -2px; line-height: 1.05; margin-bottom: 16px; }
+.product-hero h1 span { color: var(--green); }
+.product-hero-desc { font-size: 14px; color: var(--text2); line-height: 1.75; margin-bottom: 28px; max-width: 400px; }
+
+.download-buttons { display: flex; flex-direction: column; gap: 8px; }
+
+.dl-btn {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; border-radius: 11px; cursor: pointer;
+  border: 1px solid var(--border2); background: var(--surface2);
+  text-decoration: none; transition: all 0.2s;
+}
+.dl-btn:hover { border-color: var(--green); background: var(--green-dim); transform: translateX(3px); }
+.dl-btn-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface3); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dl-btn-icon svg { width: 18px; height: 18px; color: var(--text2); }
+.dl-btn:hover .dl-btn-icon svg { color: var(--green); }
+.dl-btn-info { flex: 1; }
+.dl-btn-os { font-size: 13px; font-weight: 700; color: var(--text); }
+.dl-btn-meta { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-top: 1px; }
+.dl-btn-size { font-size: 11px; font-family: var(--mono); color: var(--muted); }
+.dl-btn svg.arrow { width: 14px; height: 14px; color: var(--muted); transition: color 0.15s; }
+.dl-btn:hover svg.arrow { color: var(--green); }
+
+.version-note { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-top: 12px; }
+
+/* LARGE APP SCREENSHOT */
+.product-hero-right {}
+
+.app-screenshot-lg {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+}
+.screenshot-topbar {
+  height: 28px; background: #18181f; border-bottom: 1px solid #2e2e3a;
+  display: flex; align-items: center; padding: 0 12px; gap: 6px;
+}
+.screenshot-dot { width: 7px; height: 7px; border-radius: 50%; }
+.screenshot-dot.r { background: #f25f5c; } .screenshot-dot.y { background: #f5a623; } .screenshot-dot.g { background: #34c472; }
+.screenshot-nav-dots { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.screenshot-nav-dot { width: 5px; height: 5px; border-radius: 50%; background: #2e2e3a; }
+.screenshot-nav-dot.active { background: #4f8ef7; }
+.screenshot-body { padding: 14px; background: #0f0f12; }
+
+/* mini wizard in screenshot */
+.ss-steps { display: flex; align-items: center; gap: 0; margin-bottom: 12px; }
+.ss-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #2e2e3a; display: flex; align-items: center; justify-content: center; font-size: 7px; font-family: var(--mono); color: #5a5a72; background: #0f0f12; flex-shrink: 0; }
+.ss-dot.active { border-color: #4f8ef7; color: #4f8ef7; background: rgba(79,142,247,0.1); }
+.ss-dot.done { background: #34c472; border-color: #34c472; color: #000; font-size: 8px; }
+.ss-line { flex: 1; height: 1px; background: #2e2e3a; min-width: 8px; }
+.ss-line.done { background: #34c472; }
+.ss-label { font-size: 7px; font-family: var(--mono); color: #5a5a72; margin-left: 4px; white-space: nowrap; }
+
+.ss-hero-text { font-size: 11px; font-weight: 700; color: #e4e4ee; letter-spacing: -0.3px; margin-bottom: 3px; }
+.ss-sub-text { font-size: 8px; font-family: var(--mono); color: #5a5a72; margin-bottom: 10px; }
+
+.ss-device-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.ss-device-box { border: 1px solid #2e2e3a; border-radius: 7px; padding: 8px; background: #18181f; }
+.ss-device-box.sel { border-color: #34c472; background: rgba(52,196,114,0.06); }
+.ss-device-box.ios-sel { border-color: #7b7ef5; background: rgba(123,126,245,0.06); }
+.ss-device-icon { width: 20px; height: 20px; border-radius: 5px; background: #22222c; border: 1px solid #2e2e3a; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
+.ss-device-icon svg { width: 10px; height: 10px; color: #5a5a72; }
+.ss-device-box.sel .ss-device-icon { background: rgba(52,196,114,0.1); border-color: rgba(52,196,114,0.3); }
+.ss-device-box.sel .ss-device-icon svg { color: #34c472; }
+.ss-device-box.ios-sel .ss-device-icon { background: rgba(123,126,245,0.1); border-color: rgba(123,126,245,0.3); }
+.ss-device-box.ios-sel .ss-device-icon svg { color: #7b7ef5; }
+.ss-device-name { font-size: 8px; font-weight: 700; }
+.ss-device-box.sel .ss-device-name { color: #34c472; }
+.ss-device-box.ios-sel .ss-device-name { color: #7b7ef5; }
+.ss-device-desc { font-size: 7px; font-family: var(--mono); color: #5a5a72; line-height: 1.4; margin-top: 2px; }
+
+.ss-badge-row { display: flex; gap: 4px; margin-top: 3px; }
+.ss-badge { font-size: 7px; font-family: var(--mono); padding: 1px 5px; border-radius: 3px; }
+.ss-badge.g { background: rgba(52,196,114,0.12); color: #34c472; }
+.ss-badge.i { background: rgba(123,126,245,0.12); color: #7b7ef5; }
+
+.ss-btn-row { display: flex; justify-content: flex-end; }
+.ss-btn { font-size: 8px; font-family: var(--mono); padding: 5px 11px; border-radius: 5px; background: #4f8ef7; color: #fff; border: none; font-weight: 600; }
+
+/* PRODUCT SPECS */
+.product-specs { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 48px; }
+
+.spec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; }
+.spec-card-title { font-size: 14px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.spec-card-title svg { width: 16px; height: 16px; color: var(--blue); }
+
+.spec-list { display: flex; flex-direction: column; gap: 10px; }
+.spec-item { display: flex; align-items: flex-start; gap: 10px; }
+.spec-check { width: 16px; height: 16px; border-radius: 50%; background: var(--green-dim); border: 1px solid rgba(52,196,114,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.spec-check svg { width: 8px; height: 8px; color: var(--green); }
+.spec-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
+.spec-text strong { color: var(--text); font-weight: 600; }
+
+.privacy-card { background: var(--surface); border: 1px solid rgba(52,196,114,0.2); border-radius: 14px; padding: 28px; }
+.privacy-shield { width: 48px; height: 48px; border-radius: 12px; background: var(--green-dim); border: 1px solid rgba(52,196,114,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.privacy-shield svg { width: 22px; height: 22px; color: var(--green); }
+.privacy-card-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.privacy-card-text { font-size: 12px; color: var(--text2); line-height: 1.7; }
+.privacy-card-text + .privacy-card-text { margin-top: 8px; }
+
+/* BACK LINK */
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text2); text-decoration: none;
+  margin-bottom: 40px; cursor: pointer; transition: color 0.15s;
+  background: none; border: none;
+}
+.back-link:hover { color: var(--text); }
+.back-link svg { width: 14px; height: 14px; }
+
+/* SHARED BUTTONS */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 11px 22px; background: var(--blue); color: #fff;
+  border-radius: 9px; font-size: 13px; font-weight: 700;
+  cursor: pointer; border: none; transition: all 0.15s; text-decoration: none;
+}
+.btn-primary:hover { background: #3a7aee; transform: translateY(-1px); box-shadow: 0 6px 20px var(--blue-glow); }
+.btn-primary svg { width: 14px; height: 14px; }
+
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 11px 20px; background: none; color: var(--text2);
+  border-radius: 9px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border2); transition: all 0.15s; text-decoration: none;
+}
+.btn-outline:hover { color: var(--text); border-color: var(--text2); }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+/* COMING SOON OVERLAY */
+.coming-soon-overlay {
+  position: absolute; inset: 0; background: rgba(8,8,16,0.7);
+  backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center;
+  z-index: 2; border-radius: 10px;
+}
+.coming-soon-tag {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  background: var(--surface3); border: 1px solid var(--border2);
+  padding: 5px 12px; border-radius: 6px; letter-spacing: 1px; text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 10l4 4 4-8 3 5 3-3"/>
+      </svg>
+    </div>
+    Vibe<span>net</span>
+  </div>
+  <div class="nav-links">
+    <a onclick="showPage('home')" id="nav-home" class="active">Produkty</a>
+    <a onclick="showPage('home'); scrollToSection('features')">Funkcje</a>
+    <a onclick="showPage('home'); scrollToSection('about')">O nas</a>
+  </div>
+  <a class="nav-cta" onclick="showPage('recovery')">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M8 3v8M4 7l4 4 4-4"/><path d="M2 13h12"/></svg>
+    Pobierz aplikacje
+  </a>
+</nav>
+
+<!-- ══════════════════════════════════
+     HOME PAGE
+══════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        Narzedzia dla profesjonalistow IT
+      </div>
+      <h1>Twoje dane.<br><span class="hi2">Twoja kontrola.</span></h1>
+      <p class="hero-sub">Vibenet tworzy narzedzia do ochrony, odzysku i zarzadzania danymi — bez chmury, bez inwigilacji, bez kompromisow w kwestii prywatnosci.</p>
+      <div class="hero-actions">
+        <button class="btn-hero-primary" onclick="showPage('recovery')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v8M4 7l4 4 4-4"/><path d="M2 13h12"/></svg>
+          Zobacz produkty
+        </button>
+        <button class="btn-hero-secondary" onclick="scrollToSection('products')">
+          Przeglij oferte
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-num">100%</div>
+          <div class="hero-stat-label">lokalnie</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">3</div>
+          <div class="hero-stat-label">systemy OS</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">0</div>
+          <div class="hero-stat-label">danych na serwerach</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="section" id="products">
+    <div class="section-inner">
+      <div class="section-tag">Nasze produkty</div>
+      <h2 class="section-title">Kompletny zestaw<br>narzedzi IT</h2>
+      <p class="section-sub">Kazde narzedzie Vibenet zostalo zaprojektowane z mysla o prostocie, prywatnosci i niezawodnosci. Bez subskrypcji, bez chmury.</p>
+
+      <div class="products-grid">
+
+        <!-- RECOVERY APP -->
+        <div class="product-card recovery" onclick="showPage('recovery')">
+          <div class="product-card-bg"></div>
+          <div class="product-card-hero">
+            <div class="app-mockup">
+              <div class="mockup-topbar">
+                <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+                <div class="mockup-title-bar">Odzyskiwanie danych</div>
+              </div>
+              <div class="mockup-body">
+                <div class="mockup-step-row">
+                  <div class="mockup-circle done">✓</div>
+                  <div class="mockup-line-h" style="background:#34c472"></div>
+                  <div class="mockup-circle" style="border-color:#4f8ef7;color:#4f8ef7">2</div>
+                  <div class="mockup-line-h"></div>
+                  <div class="mockup-circle">3</div>
+                  <div class="mockup-line-h"></div>
+                  <div class="mockup-circle">4</div>
+                </div>
+                <div class="mockup-device-grid">
+                  <div class="mockup-device-box sel">
+                    <div class="mockup-device-name and">Android</div>
+                    <div class="mockup-device-sub">Wybrane</div>
+                    <div class="mockup-badge-row"><span class="mockup-stat g">USB</span></div>
+                  </div>
+                  <div class="mockup-device-box sel2">
+                    <div class="mockup-device-name ios2">iOS</div>
+                    <div class="mockup-device-sub">iCloud / USB</div>
+                    <div class="mockup-badge-row"><span class="mockup-stat" style="color:#7b7ef5;background:rgba(123,126,245,0.12)">Lightning</span></div>
+                  </div>
+                </div>
+                <div class="mockup-progress-wrap"><div class="mockup-progress-fill"></div></div>
+                <div style="display:flex;gap:3px;margin-top:5px">
+                  <div class="mockup-row" style="width:30%;background:rgba(52,196,114,0.15)"></div>
+                  <div class="mockup-row" style="width:20%;background:rgba(242,95,92,0.15)"></div>
+                  <div class="mockup-row" style="width:25%;background:rgba(245,166,35,0.15)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-tag green">Dostepne</div>
+            <div class="product-card-name">Data Recovery</div>
+            <div class="product-card-desc">Odzyskiwanie usuniectych plikow z urzadzen Android i iOS. Zdjecia, SMS-y, kontakty, dokumenty — wszystko lokalnie.</div>
+            <div class="product-card-footer">
+              <div class="product-card-platforms">
+                <span class="platform-tag">WIN</span>
+                <span class="platform-tag">MAC</span>
+                <span class="platform-tag">LIN</span>
+              </div>
+              <button class="product-card-btn" onclick="event.stopPropagation(); showPage('recovery')">
+                Szczegoly
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BACKUP (COMING SOON) -->
+        <div class="product-card backup" style="cursor:default">
+          <div class="product-card-bg"></div>
+          <div class="product-card-hero">
+            <div class="placeholder-mockup" style="position:relative">
+              <div class="ph-topbar">
+                <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+              </div>
+              <div class="ph-body">
+                <div class="ph-icon">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6a5 5 0 0110 0v1a3 3 0 010 6H4a3 3 0 010-6V6z"/><path d="M8 9v4M6 11l2 2 2-2"/></svg>
+                </div>
+                <div class="ph-label">W PRZYGOTOWANIU</div>
+              </div>
+              <div class="coming-soon-overlay"><div class="coming-soon-tag">Wkrotce</div></div>
+            </div>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-tag blue">Wkrotce</div>
+            <div class="product-card-name">Backup Manager</div>
+            <div class="product-card-desc">Automatyczne kopie zapasowe urzadzen mobilnych i komputerow. Harmonogramowanie, szyfrowanie, weryfikacja.</div>
+            <div class="product-card-footer">
+              <div class="product-card-platforms">
+                <span class="platform-tag">WIN</span>
+                <span class="platform-tag">MAC</span>
+              </div>
+              <button class="product-card-btn" style="opacity:0.4;cursor:not-allowed">
+                Wkrotce
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MDM MONITOR (COMING SOON) -->
+        <div class="product-card monitor" style="cursor:default">
+          <div class="product-card-bg"></div>
+          <div class="product-card-hero">
+            <div class="placeholder-mockup" style="position:relative">
+              <div class="ph-topbar">
+                <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+              </div>
+              <div class="ph-body">
+                <div class="ph-icon">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M5 13h6M8 13v2"/><path d="M4 7l2 2 4-4"/></svg>
+                </div>
+                <div class="ph-label">W PRZYGOTOWANIU</div>
+              </div>
+              <div class="coming-soon-overlay"><div class="coming-soon-tag">Wkrotce</div></div>
+            </div>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-tag purple">Wkrotce</div>
+            <div class="product-card-name">Device Monitor</div>
+            <div class="product-card-desc">Monitorowanie i zarzadzanie flotami urzadzen mobilnych. Diagnostyka, raporty, alerty w czasie rzeczywistym.</div>
+            <div class="product-card-footer">
+              <div class="product-card-platforms">
+                <span class="platform-tag">WIN</span>
+                <span class="platform-tag">MAC</span>
+                <span class="platform-tag">LIN</span>
+              </div>
+              <button class="product-card-btn" style="opacity:0.4;cursor:not-allowed">
+                Wkrotce
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features" style="padding-top:0">
+    <div class="section-inner">
+      <div class="section-tag">Dlaczego Vibenet</div>
+      <h2 class="section-title">Zbudowane inaczej</h2>
+      <p class="section-sub">Nie kolejne SaaS z subskrypcja i chmura. Narzedzia ktore dzialaja na Twoim komputerze, Twoich zasadach.</p>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon blue">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2L3 6v5c0 4 3 7.5 7 8.5 4-1 7-4.5 7-8.5V6l-7-4z"/><path d="M7 10l2 2 4-4"/></svg>
+          </div>
+          <div class="feature-name">100% lokalnie</div>
+          <div class="feature-desc">Zadne dane nie opuszczaja Twojego komputera. Brak chmury, brak logowania, brak telemetrii.</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon green">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10h6M10 7v6"/></svg>
+          </div>
+          <div class="feature-name">Bez subskrypcji</div>
+          <div class="feature-desc">Kupujesz raz, uzywasz zawsze. Licencja dozywotnia, darmowe aktualizacje przez rok.</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon amber">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 3"/></svg>
+          </div>
+          <div class="feature-name">Szybkie skanowanie</div>
+          <div class="feature-desc">Gleboka analiza sektorow z optymalizacja wielowatkowa. Wyniki w minutach, nie godzinach.</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon purple">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h12M4 10h12M4 14h8"/></svg>
+          </div>
+          <div class="feature-name">Android i iOS</div>
+          <div class="feature-desc">Jeden interfejs, dwa systemy. Obslugujemy USB, Wi-Fi i iCloud bez dodatkowych sterownikow.</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon blue">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M3 8h14"/><circle cx="6" cy="12" r="1" fill="currentColor"/></svg>
+          </div>
+          <div class="feature-name">Windows, Mac, Linux</div>
+          <div class="feature-desc">Natywne aplikacje na wszystkie trzy systemy. Jeden zakup, trzy instalacje.</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon green">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3v14M3 10h14"/><circle cx="10" cy="10" r="7"/></svg>
+          </div>
+          <div class="feature-name">Wsparcie techniczne</div>
+          <div class="feature-desc">Email i chat z naszym zespolem. Odpowiadamy w ciagu 24h w dni robocze.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section" id="about" style="padding-top:0">
+    <div class="section-inner">
+      <div class="section-tag">O Vibenet</div>
+      <h2 class="section-title">Prywatnosc to<br>nie opcja</h2>
+      <p class="section-sub" style="max-width:600px">Jestesmy mala firma z duzym podejsciem do prywatnosci. Uwazamy ze narzedzia IT nie powinny szpiegowac uzytkownikow — dlatego nasze nie robia tego nigdy.</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-banner">
+    <div class="cta-banner-inner">
+      <h2>Zacznij odzyskiwac dane juz teraz</h2>
+      <p>Data Recovery jest gotowe do pobrania. Dostepne na Windows, macOS i Linux. Bezplatny okres probny — bez karty kredytowej.</p>
+      <div class="cta-banner-actions">
+        <button class="btn-primary" onclick="showPage('recovery')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M8 3v8M4 7l4 4 4-4"/><path d="M2 13h12"/></svg>
+          Pobierz bezplatnie
+        </button>
+        <button class="btn-outline" onclick="showPage('recovery')">
+          Zobacz szczegoly produktu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-left">© 2026 Vibenet. Wszelkie prawa zastrzezone.</div>
+    <div class="footer-links">
+      <a>Polityka prywatnosci</a>
+      <a>Regulamin</a>
+      <a>Kontakt</a>
+    </div>
+  </footer>
+
+</div><!-- /home -->
+
+
+<!-- ══════════════════════════════════
+     RECOVERY PRODUCT PAGE
+══════════════════════════════════ -->
+<div class="page" id="page-recovery">
+  <div class="product-page">
+
+    <button class="back-link" onclick="showPage('home')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg>
+      Wróc do produktów
+    </button>
+
+    <!-- PRODUCT HERO -->
+    <div class="product-hero">
+      <div class="product-hero-left">
+        <div class="product-hero-badge">
+          <div class="product-hero-badge-dot"></div>
+          Dostepne teraz
+        </div>
+        <h1>Data<br><span>Recovery</span></h1>
+        <p class="product-hero-desc">Profesjonalne narzedzie do odzyskiwania usuniectych plikow z urzadzen Android i iOS. Skanuje pamiec warstwami — odzyskuje zdjecia, wideo, SMS-y, kontakty i dokumenty. Wszystko lokalnie, bez przesylania danych.</p>
+
+        <div class="download-buttons">
+          <a class="dl-btn" href="#" onclick="showDownloadInfo('Windows'); return false;">
+            <div class="dl-btn-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M3 3h7v7H3zM10 3h7v7h-7zM3 10h7v7H3zM10 10h7v7h-7z"/>
+              </svg>
+            </div>
+            <div class="dl-btn-info">
+              <div class="dl-btn-os">Windows</div>
+              <div class="dl-btn-meta">Windows 10 / 11 · 64-bit</div>
+            </div>
+            <div class="dl-btn-size">~48 MB</div>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v8M4 7l4 4 4-4"/></svg>
+          </a>
+
+          <a class="dl-btn" href="#" onclick="showDownloadInfo('macOS'); return false;">
+            <div class="dl-btn-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M13.5 2c.5 0 1.5 1 1.5 3 0 1.5-1 2.5-1.5 3C15 9 16 10.5 16 12.5c0 3-2 5.5-4 5.5-.8 0-1.5-.3-2-.5-.5.2-1.2.5-2 .5-2 0-4-2.5-4-5.5 0-2 1-3.5 2.5-4.5C6 7.5 5 6.5 5 5c0-2 1-3 1.5-3 .5 0 1 .5 1.5 1 .5-.5 1.5-1 2-1s1.5.5 2 1c.5-.5 1-1 1.5-1z"/>
+              </svg>
+            </div>
+            <div class="dl-btn-info">
+              <div class="dl-btn-os">macOS</div>
+              <div class="dl-btn-meta">macOS 12 Monterey+ · Apple Silicon & Intel</div>
+            </div>
+            <div class="dl-btn-size">~52 MB</div>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v8M4 7l4 4 4-4"/></svg>
+          </a>
+
+          <a class="dl-btn" href="#" onclick="showDownloadInfo('Linux'); return false;">
+            <div class="dl-btn-icon">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M10 2c-1.5 0-3 1.5-3 4 0 1.5.5 3 1 4-.5.5-2 1.5-2 3 0 1.5 1.5 3 4 3s4-1.5 4-3c0-1.5-1.5-2.5-2-3 .5-1 1-2.5 1-4 0-2.5-1.5-4-3-4z"/>
+                <path d="M7 15.5c-.5.5-1.5 1-1.5 2M13 15.5c.5.5 1.5 1 1.5 2"/>
+              </svg>
+            </div>
+            <div class="dl-btn-info">
+              <div class="dl-btn-os">Linux</div>
+              <div class="dl-btn-meta">Ubuntu 20.04+ / Debian · AppImage</div>
+            </div>
+            <div class="dl-btn-size">~44 MB</div>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v8M4 7l4 4 4-4"/></svg>
+          </a>
+        </div>
+        <div class="version-note">Wersja 1.0.0 — wydana 28.02.2026 · Bezplatna wersja probna, 14 dni</div>
+      </div>
+
+      <!-- APP SCREENSHOT -->
+      <div class="product-hero-right">
+        <div class="app-screenshot-lg">
+          <div class="screenshot-topbar">
+            <div class="screenshot-dot r"></div>
+            <div class="screenshot-dot y"></div>
+            <div class="screenshot-dot g"></div>
+            <div class="screenshot-nav-dots">
+              <div class="screenshot-nav-dot active"></div>
+              <div class="screenshot-nav-dot"></div>
+              <div class="screenshot-nav-dot"></div>
+              <div class="screenshot-nav-dot"></div>
+            </div>
+          </div>
+          <div class="screenshot-body">
+
+            <!-- mini eyebrow -->
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+              <div style="width:16px;height:1.5px;background:#4f8ef7;border-radius:1px"></div>
+              <span style="font-family:var(--mono);font-size:8px;color:#5a5a72;letter-spacing:1.5px;text-transform:uppercase">Android · iOS · pelna analiza</span>
+            </div>
+
+            <div class="ss-hero-text">Przywroc utracone dane z urzadzenia.</div>
+            <div class="ss-sub-text" style="margin-bottom:8px">Gleboka analiza pamieci — odzyskujemy zdjecia, wideo, SMS-y, kontakty.</div>
+
+            <!-- steps bar -->
+            <div class="ss-steps" style="margin-bottom:10px">
+              <div class="ss-dot done">✓</div>
+              <div style="display:flex;align-items:center;gap:3px;flex:1">
+                <div class="ss-line done"></div>
+                <span class="ss-label" style="color:#34c472">Urzadzenie</span>
+              </div>
+              <div class="ss-dot active" style="margin:0 2px">2</div>
+              <div style="display:flex;align-items:center;gap:3px;flex:1">
+                <div class="ss-line"></div>
+                <span class="ss-label">Dane</span>
+              </div>
+              <div class="ss-dot" style="margin:0 2px">3</div>
+              <div class="ss-line"></div>
+              <div class="ss-dot">4</div>
+            </div>
+
+            <!-- device cards -->
+            <div style="font-size:10px;font-weight:700;color:#e4e4ee;margin-bottom:6px;letter-spacing:-0.2px">Wybierz typ urzadzenia</div>
+            <div style="font-size:7px;font-family:var(--mono);color:#5a5a72;margin-bottom:8px">// kliknij aby dowiedziec sie wiecej o procesie</div>
+
+            <div class="ss-device-grid">
+              <div class="ss-device-box sel">
+                <div class="ss-device-icon">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="1" width="8" height="14" rx="1.5"/><circle cx="8" cy="12" r="0.8" fill="currentColor"/><path d="M6 4h4"/></svg>
+                </div>
+                <div class="ss-device-name">Android</div>
+                <div class="ss-device-desc">Samsung, Xiaomi,<br>Google Pixel i inne</div>
+                <div class="ss-badge-row"><span class="ss-badge g">Wybrane</span></div>
+              </div>
+              <div class="ss-device-box ios-sel">
+                <div class="ss-device-icon">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="1" width="8" height="14" rx="1.5"/><path d="M6 3.5h4"/><circle cx="8" cy="12" r="0.8" fill="currentColor"/></svg>
+                </div>
+                <div class="ss-device-name" style="color:#7b7ef5">iOS / iPadOS</div>
+                <div class="ss-device-desc">iPhone, iPad,<br>iOS 13+</div>
+                <div class="ss-badge-row"><span class="ss-badge i">USB/iCloud</span></div>
+              </div>
+            </div>
+
+            <div class="ss-btn-row" style="margin-top:10px">
+              <div class="ss-btn">Dalej</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPECS + PRIVACY -->
+    <div class="product-specs">
+      <div class="spec-card">
+        <div class="spec-card-title">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1L2 4v4c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V4L8 1z"/></svg>
+          Co odzyskujemy
+        </div>
+        <div class="spec-list">
+          <div class="spec-item"><div class="spec-check"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4l2 2 4-4"/></svg></div><div class="spec-text"><strong>Zdjecia i wideo</strong> — JPG, PNG, HEIC, RAW, MP4, MOV, AVI</div></div>
+          <div class="spec-item"><div class="spec-check"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4l2 2 4-4"/></svg></div><div class="spec-text"><strong>Wiadomosci SMS/MMS</strong> — historia konwersacji, zalaczniki</div></div>
+          <div class="spec-item"><div class="spec-check"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4l2 2 4-4"/></svg></div><div class="spec-text"><strong>Kontakty</strong> — imiona, numery telefonow, adresy email</div></div>
+          <div class="spec-item"><div class="spec-check"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4l2 2 4-4"/></svg></div><div class="spec-text"><strong>Dokumenty</strong> — PDF, DOCX, XLSX, PPTX i inne</div></div>
+          <div class="spec-item"><div class="spec-check"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4l2 2 4-4"/></svg></div><div class="spec-text"><strong>Notatki i maile</strong> — lokalne bazy danych aplikacji</div></div>
+          <div class="spec-item"><div class="spec-check"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4l2 2 4-4"/></svg></div><div class="spec-text"><strong>Dane aplikacji</strong> — WhatsApp, Telegram i inne (Android)</div></div>
+        </div>
+      </div>
+
+      <div class="privacy-card">
+        <div class="privacy-shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L4 6v6c0 5.25 3.75 10 8 11 4.25-1 8-5.75 8-11V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <div class="privacy-card-title">Twoje dane sa u Ciebie</div>
+        <p class="privacy-card-text">Caly proces odbywa sie lokalnie na Twoim komputerze. Nie przesylamy, nie przechowujemy ani nie mamy dostepu do zadnych danych z Twojego urzadzenia.</p>
+        <p class="privacy-card-text">Polaczenie z serwerami Vibenet jest uzywane jedynie do jednorazowej weryfikacji licencji.</p>
+        <p class="privacy-card-text" style="color:var(--green);margin-top:12px;font-size:11px;font-family:var(--mono)">Brak konta. Brak chmury. Brak telemetrii.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer style="border-top: 1px solid var(--border); padding: 32px 64px; display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;">
+    <div style="font-size:13px;color:var(--muted)">© 2026 Vibenet</div>
+    <button class="btn-outline" onclick="showPage('home')" style="font-size:12px">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px"><path d="M10 3L5 8l5 5"/></svg>
+      Powrot do strony glownej
+    </button>
+  </footer>
+
+</div><!-- /recovery -->
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#22222c;border:1px solid #34345a;color:#e8e8f4;font-family:var(--mono);font-size:12px;padding:11px 20px;border-radius:9px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.5);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)"></div>
+
+<script>
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    if (id === 'home') document.getElementById('nav-home').classList.add('active');
+  }
+
+  function scrollToSection(id) {
+    showPage('home');
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+
+  function showDownloadInfo(os) {
+    showToast('Pobieranie (' + os + ') bedzie dostepne po wystawieniu na serwer.');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(60px)'; }, 3200);
+  }
+</script>
+</body>
+</html>

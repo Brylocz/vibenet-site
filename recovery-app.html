@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odzyskiwanie danych</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0f12;
+  --surface: #18181f;
+  --surface2: #22222c;
+  --surface3: #2c2c38;
+  --border: #2e2e3a;
+  --border2: #3e3e50;
+  --accent-pop: #4f8ef7;
+  --accent-pop-dim: rgba(79,142,247,0.12);
+  --success: #34c472;
+  --success-dim: rgba(52,196,114,0.12);
+  --warn: #f5a623;
+  --warn-dim: rgba(245,166,35,0.12);
+  --danger: #f25f5c;
+  --danger-dim: rgba(242,95,92,0.12);
+  --text: #e4e4ee;
+  --text2: #9090a8;
+  --muted: #5a5a72;
+  --android: #34c472;
+  --ios: #7b7ef5;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: 58px;
+  background: rgba(15,15,18,0.94);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-pop); }
+.header-label { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--muted); letter-spacing: 0.8px; }
+
+nav { display: flex; gap: 2px; }
+nav button {
+  background: none; border: none; color: var(--muted);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+  padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all 0.15s;
+}
+nav button:hover { background: var(--surface2); color: var(--text); }
+nav button.active { background: var(--surface3); color: var(--text); }
+
+/* ── MAIN ── */
+main { max-width: 860px; margin: 0 auto; padding: 52px 24px 80px; }
+
+/* ── HERO ── */
+.hero { margin-bottom: 48px; animation: fadeUp 0.5s ease both; }
+.hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.eyebrow-line { width: 24px; height: 1.5px; background: var(--accent-pop); border-radius: 1px; }
+.eyebrow-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+.hero h1 { font-size: clamp(30px, 4vw, 50px); font-weight: 700; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 14px; }
+.hero h1 .hi { color: var(--accent-pop); }
+.hero p { font-size: 14px; color: var(--text2); max-width: 400px; line-height: 1.7; font-weight: 400; }
+
+/* ── STEPS ── */
+.steps-indicator {
+  display: flex; align-items: center;
+  margin-bottom: 32px; animation: fadeUp 0.5s 0.05s ease both;
+}
+.step-dot { display: flex; align-items: center; gap: 8px; }
+.step-dot .circle {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500;
+  color: var(--muted); background: var(--bg); transition: all 0.25s; flex-shrink: 0;
+}
+.step-dot .s-label { font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; transition: color 0.25s; }
+.step-dot.active .circle { border-color: var(--accent-pop); color: var(--accent-pop); background: var(--accent-pop-dim); }
+.step-dot.active .s-label { color: var(--text); font-weight: 600; }
+.step-dot.done .circle { border-color: var(--success); background: var(--success); color: #000; font-size: 11px; }
+.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 8px; transition: background 0.3s; min-width: 20px; }
+.step-line.done { background: var(--success); }
+
+/* ── CARD ── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 28px; margin-bottom: 16px;
+}
+.card-header { margin-bottom: 22px; }
+.card-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+.card-sub { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+/* ── DEVICE SELECTOR ── */
+.device-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.device-card {
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 22px; cursor: pointer; transition: all 0.2s;
+  background: var(--surface2); position: relative;
+  user-select: none;
+}
+.device-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.device-card.android.selected { border-color: var(--android); background: rgba(52,196,114,0.06); box-shadow: 0 0 0 3px rgba(52,196,114,0.08); }
+.device-card.ios.selected { border-color: var(--ios); background: rgba(123,126,245,0.06); box-shadow: 0 0 0 3px rgba(123,126,245,0.08); }
+
+.device-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 9px; font-family: 'JetBrains Mono', monospace; color: var(--muted);
+  background: var(--surface3); padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px;
+}
+
+.device-icon-wrap {
+  width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px; background: var(--surface3);
+}
+
+.device-icon-svg { width: 20px; height: 20px; }
+
+.device-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+.device-card.android .device-name { color: var(--android); }
+.device-card.ios .device-name { color: var(--ios); }
+.device-desc { font-size: 11px; color: var(--muted); line-height: 1.6; font-family: 'JetBrains Mono', monospace; }
+
+.info-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 12px; font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-pop); text-decoration: none; cursor: pointer;
+  border: none; background: none; padding: 0; transition: opacity 0.15s;
+}
+.info-link:hover { opacity: 0.7; }
+.info-link svg { width: 11px; height: 11px; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 32px; max-width: 520px; width: 90%;
+  transform: translateY(12px) scale(0.98); transition: transform 0.25s ease, opacity 0.2s;
+  opacity: 0;
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); opacity: 1; }
+
+.modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+.modal-title { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
+.modal-subtitle { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+.modal-close {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border2);
+  background: none; color: var(--muted); cursor: pointer; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s;
+}
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+
+.modal-section { margin-bottom: 20px; }
+.modal-section-title {
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.modal-steps { display: flex; flex-direction: column; gap: 10px; }
+.modal-step { display: flex; gap: 12px; }
+.modal-step-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--surface3);
+  border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text2);
+  flex-shrink: 0; margin-top: 1px;
+}
+.modal-step-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.modal-step-text strong { color: var(--text); font-weight: 600; }
+
+.privacy-box {
+  background: rgba(52,196,114,0.07); border: 1px solid rgba(52,196,114,0.2);
+  border-radius: 10px; padding: 14px 16px;
+}
+.privacy-box-title {
+  font-size: 12px; font-weight: 700; color: var(--success); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.privacy-box-title svg { width: 13px; height: 13px; }
+.privacy-box p { font-size: 12px; color: var(--text2); line-height: 1.65; }
+.privacy-box p + p { margin-top: 6px; }
+
+.modal-req {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.modal-req-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border-radius: 8px; padding: 10px 12px;
+}
+.req-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-pop); flex-shrink: 0; }
+.req-text { font-size: 12px; color: var(--text2); font-family: 'JetBrains Mono', monospace; }
+
+/* ── DATA TYPES ── */
+.data-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.data-type-btn {
+  border: 1px solid var(--border); background: var(--surface2);
+  border-radius: 10px; padding: 14px; cursor: pointer; text-align: left;
+  transition: all 0.15s; color: var(--text); font-family: 'Outfit', sans-serif; position: relative;
+}
+.data-type-btn:hover { border-color: var(--border2); }
+.data-type-btn.selected { border-color: var(--accent-pop); background: var(--accent-pop-dim); }
+.dt-icon-box {
+  width: 28px; height: 28px; border-radius: 6px; background: var(--surface3);
+  border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.dt-icon-box svg { width: 14px; height: 14px; color: var(--text2); }
+.data-type-btn.selected .dt-icon-box { background: var(--accent-pop-dim); border-color: var(--accent-pop); }
+.data-type-btn.selected .dt-icon-box svg { color: var(--accent-pop); }
+.dt-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.dt-info { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.dt-check {
+  position: absolute; top: 10px; right: 10px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center;
+  font-size: 8px; transition: all 0.15s;
+}
+.data-type-btn.selected .dt-check { background: var(--accent-pop); border-color: var(--accent-pop); color: #fff; }
+
+/* ── WARNING ── */
+.warning-panel {
+  background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.2);
+  border-radius: 10px; padding: 13px 16px; display: flex; gap: 10px;
+  align-items: flex-start; margin-bottom: 24px;
+}
+.warning-icon { flex-shrink: 0; margin-top: 2px; }
+.warning-icon svg { width: 14px; height: 14px; color: var(--warn); }
+.warning-text { font-size: 12px; color: rgba(245,166,35,0.85); line-height: 1.65; font-family: 'JetBrains Mono', monospace; }
+
+/* ── SCAN ── */
+.scan-area { text-align: center; padding: 28px 0; }
+
+.scan-ring-wrap { position: relative; width: 80px; height: 80px; margin: 0 auto 24px; }
+.scan-ring {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 1.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); transition: border-color 0.3s;
+}
+.scan-ring.scanning { border-color: var(--accent-pop); }
+.scan-ring svg { width: 28px; height: 28px; color: var(--muted); transition: color 0.3s; }
+.scan-ring.scanning svg { color: var(--accent-pop); }
+.scan-ring.done svg { color: var(--success); }
+.scan-ring-anim {
+  position: absolute; inset: -4px; border-radius: 50%;
+  border: 1.5px solid transparent; border-top-color: var(--accent-pop);
+  opacity: 0; transition: opacity 0.3s;
+}
+.scan-ring.scanning ~ .scan-ring-anim { opacity: 1; animation: spin 1s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.progress-bar-wrap {
+  background: var(--surface2); border-radius: 100px; height: 4px;
+  overflow: hidden; margin: 0 auto 8px; max-width: 360px; border: 1px solid var(--border);
+}
+.progress-bar-fill {
+  height: 100%; background: var(--accent-pop);
+  border-radius: 100px; transition: width 0.5s ease;
+}
+.progress-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.scan-status-text { font-size: 12px; color: var(--accent-pop); font-family: 'JetBrains Mono', monospace; min-height: 18px; }
+
+/* ── STATS ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.stat-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; text-align: center;
+}
+.stat-num { font-size: 24px; font-weight: 700; letter-spacing: -1px; }
+.stat-label { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-box.blue .stat-num { color: var(--accent-pop); }
+.stat-box.green .stat-num { color: var(--success); }
+.stat-box.orange .stat-num { color: var(--warn); }
+.stat-box.red .stat-num { color: var(--danger); }
+
+/* ── FILTER ── */
+.filter-bar { display: flex; gap: 5px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+.filter-btn {
+  font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500;
+  padding: 5px 11px; border-radius: 6px; border: 1px solid var(--border);
+  background: none; color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.filter-btn:hover { background: var(--surface2); color: var(--text); }
+.filter-btn.active { background: var(--surface3); color: var(--text); border-color: var(--border2); }
+.select-all {
+  margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  background: none; border: none; color: var(--accent-pop); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* ── RESULTS ── */
+.results-grid { display: flex; flex-direction: column; gap: 5px; }
+.result-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 9px; transition: all 0.15s; cursor: pointer;
+  animation: fadeUp 0.25s ease both;
+}
+.result-item:hover { border-color: var(--border2); background: var(--surface3); }
+
+.result-item input[type="checkbox"] {
+  appearance: none; width: 15px; height: 15px; border: 1px solid var(--border2);
+  border-radius: 4px; cursor: pointer; flex-shrink: 0; position: relative; transition: all 0.15s;
+}
+.result-item input[type="checkbox"]:checked { background: var(--accent-pop); border-color: var(--accent-pop); }
+.result-item input[type="checkbox"]:checked::after {
+  content: ''; position: absolute; left: 4px; top: 1.5px;
+  width: 5px; height: 9px; border: 2px solid #fff;
+  border-left: none; border-top: none; transform: rotate(45deg);
+}
+
+.result-thumb {
+  width: 34px; height: 34px; border-radius: 7px; background: var(--surface3);
+  border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.result-thumb svg { width: 15px; height: 15px; color: var(--muted); }
+
+.result-info { flex: 1; min-width: 0; }
+.result-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-meta { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--muted); margin-top: 2px; }
+
+.result-status {
+  font-size: 9px; font-family: 'JetBrains Mono', monospace; font-weight: 500;
+  letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; flex-shrink: 0;
+}
+.result-status.recoverable { background: var(--success-dim); color: var(--success); }
+.result-status.partial { background: var(--warn-dim); color: var(--warn); }
+.result-status.corrupted { background: var(--danger-dim); color: var(--danger); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: 9px; font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s;
+}
+.btn-dark { background: #e4e4ee; color: #0f0f12; }
+.btn-dark:hover { background: #fff; transform: translateY(-1px); }
+.btn-blue { background: var(--accent-pop); color: #fff; }
+.btn-blue:hover { background: #3a7aee; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(79,142,247,0.25); }
+.btn-outline { background: none; border: 1px solid var(--border2); color: var(--text2); }
+.btn-outline:hover { border-color: var(--text2); color: var(--text); }
+.btn-success { background: var(--success); color: #000; }
+.btn-success:hover { background: #28b865; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(52,196,114,0.25); }
+.btn-row {
+  display: flex; gap: 8px; justify-content: flex-end;
+  margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--border);
+}
+
+/* ── COMPLETE ── */
+.complete-screen { text-align: center; padding: 36px 24px; }
+.complete-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--success-dim); border: 1px solid rgba(52,196,114,0.25);
+  color: var(--success); border-radius: 100px; padding: 8px 18px;
+  font-size: 13px; font-weight: 600; margin-bottom: 20px; animation: bounceIn 0.5s ease;
+}
+.complete-badge svg { width: 13px; height: 13px; }
+.complete-title { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 10px; }
+.complete-sub { font-size: 12px; color: var(--text2); font-family: 'JetBrains Mono', monospace; margin-bottom: 28px; }
+
+.folder-info-box {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 14px 18px; text-align: left;
+  max-width: 460px; margin: 0 auto 24px;
+}
+.folder-info-icon {
+  width: 36px; height: 36px; border-radius: 8px; background: var(--surface3);
+  border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.folder-info-icon svg { width: 17px; height: 17px; color: var(--warn); }
+.folder-info-label { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.folder-info-path { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text); word-break: break-all; }
+
+.complete-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+
+.complete-note {
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--muted); max-width: 400px; margin: 0 auto; line-height: 1.6;
+}
+
+/* ── STEP PANELS ── */
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--surface3); border: 1px solid var(--border2);
+  color: var(--text); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+  padding: 11px 20px; border-radius: 9px; z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── ANIMS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Android</div>
+        <div class="modal-subtitle" id="modal-subtitle">Jak działa odzyskiwanie?</div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Jak to działa</div>
+      <div class="modal-steps" id="modal-steps"></div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Wymagania</div>
+      <div class="modal-req" id="modal-req"></div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Prywatnosc i bezpieczenstwo</div>
+      <div class="privacy-box">
+        <div class="privacy-box-title">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M8 1L2 4v4c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V4L8 1z"/>
+            <path d="M5 8l2 2 4-4"/>
+          </svg>
+          Twoje dane sa u Ciebie
+        </div>
+        <p>Caly proces odbywa sie lokalnie — na Twoim komputerze. Nie przesylamy, nie przechowujemy ani nie mamy dostepu do zadnych danych z Twojego urzadzenia.</p>
+        <p>Odzyskane pliki trafiaja wylacznie do wskazanego przez Ciebie folderu na dysku. Polaczenie z serwerami jest uzywane jedynie do weryfikacji licencji.</p>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+      <button class="btn btn-blue" onclick="confirmDevice()">Wybierz to urzadzenie</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-left">
+    <div class="header-pip"></div>
+    <span class="header-label">odzyskiwanie / v2.0</span>
+  </div>
+  <nav>
+    <button class="active" onclick="setNav(this,'app')">Odzysk</button>
+    <button onclick="setNav(this,'history')">Historia</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      <span class="eyebrow-text">Android · iOS · pelna analiza pamieci</span>
+    </div>
+    <h1>Przywroc utracone<br>dane z <span class="hi">urzadzenia.</span></h1>
+    <p>Gleboka analiza pamieci — odzyskujemy zdjecia, wideo, SMS-y, kontakty i dokumenty. Wszystko lokalnie, bez wychodzenia danych na zewnatrz.</p>
+  </div>
+
+  <!-- STEPS INDICATOR -->
+  <div class="steps-indicator">
+    <div class="step-dot active" id="dot-1"><div class="circle" id="c1">1</div><span class="s-label">Urzadzenie</span></div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2"><div class="circle" id="c2">2</div><span class="s-label">Dane</span></div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3"><div class="circle" id="c3">3</div><span class="s-label">Skan</span></div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="dot-4"><div class="circle" id="c4">4</div><span class="s-label">Wyniki</span></div>
+    <div class="step-line" id="line-4"></div>
+    <div class="step-dot" id="dot-5"><div class="circle" id="c5">5</div><span class="s-label">Gotowe</span></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-panel active" id="step-1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Wybierz typ urzadzenia</div>
+        <div class="card-sub">// kliknij aby dowiedziec sie wiecej o procesie</div>
+      </div>
+      <div class="device-grid">
+
+        <div class="device-card android" id="card-android" onclick="openModal('android')">
+          <div class="device-badge">USB / Wi-Fi</div>
+          <div class="device-icon-wrap">
+            <svg class="device-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="5" y="2" width="14" height="20" rx="2"/>
+              <circle cx="12" cy="18" r="1" fill="currentColor"/>
+              <path d="M9 6h6"/>
+            </svg>
+          </div>
+          <div class="device-name">Android</div>
+          <div class="device-desc">Samsung, Xiaomi, Huawei,<br>Google Pixel i inne<br>Android 8.0+</div>
+          <button class="info-link" onclick="openModal('android')">
+            Jak to dziala
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+          </button>
+        </div>
+
+        <div class="device-card ios" id="card-ios" onclick="openModal('ios')">
+          <div class="device-badge">USB / iCloud</div>
+          <div class="device-icon-wrap">
+            <svg class="device-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="6" y="1" width="12" height="22" rx="2"/>
+              <path d="M10 5h4"/>
+              <circle cx="12" cy="19" r="1" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="device-name">iOS / iPadOS</div>
+          <div class="device-desc">iPhone, iPad, iPod Touch<br>iOS 13+ / iPadOS 14+</div>
+          <button class="info-link" onclick="openModal('ios')">
+            Jak to dziala
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+          </button>
+        </div>
+
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-dark" onclick="goToStep(2)" id="btn-step1" style="opacity:.3;pointer-events:none">Dalej</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="step-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Co chcesz odzyskac?</div>
+        <div class="card-sub">// wybierz jeden lub wiecej typow danych</div>
+      </div>
+      <div class="data-types">
+
+        <button class="data-type-btn selected" onclick="toggleType(this)">
+          <div class="dt-check">✓</div>
+          <div class="dt-icon-box">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="14" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M1 10l3.5-3 3 2.5 2-2 4 4.5"/></svg>
+          </div>
+          <div class="dt-name">Zdjecia</div>
+          <div class="dt-info">JPG, PNG, HEIC, RAW</div>
+        </button>
+
+        <button class="data-type-btn selected" onclick="toggleType(this)">
+          <div class="dt-check">✓</div>
+          <div class="dt-icon-box">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="10" height="10" rx="1.5"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>
+          </div>
+          <div class="dt-name">Wideo</div>
+          <div class="dt-info">MP4, MOV, AVI</div>
+        </button>
+
+        <button class="data-type-btn selected" onclick="toggleType(this)">
+          <div class="dt-check">✓</div>
+          <div class="dt-icon-box">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 10c0 1.1-.9 2-2 2H3l-2 2V4c0-1.1.9-2 2-2h9c1.1 0 2 .9 2 2v6z"/></svg>
+          </div>
+          <div class="dt-name">SMS / MMS</div>
+          <div class="dt-info">Wiadomosci tekstowe</div>
+        </button>
+
+        <button class="data-type-btn selected" onclick="toggleType(this)">
+          <div class="dt-check">✓</div>
+          <div class="dt-icon-box">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+          </div>
+          <div class="dt-name">Kontakty</div>
+          <div class="dt-info">Imiona, numery, e-maile</div>
+        </button>
+
+        <button class="data-type-btn selected" onclick="toggleType(this)">
+          <div class="dt-check">✓</div>
+          <div class="dt-icon-box">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5l-3-4z"/><path d="M10 1v4h3"/><path d="M5 9h6M5 12h4"/></svg>
+          </div>
+          <div class="dt-name">Dokumenty</div>
+          <div class="dt-info">PDF, DOCX, XLSX</div>
+        </button>
+
+        <button class="data-type-btn" onclick="toggleType(this)">
+          <div class="dt-check"></div>
+          <div class="dt-icon-box">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4h12v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"/><path d="M2 4l6 5 6-5"/></svg>
+          </div>
+          <div class="dt-name">Maile / Notatki</div>
+          <div class="dt-info">Skrzynka, notatki</div>
+        </button>
+
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goToStep(1)">Wróc</button>
+        <button class="btn btn-blue" onclick="goToStep(3)">Rozpocznij skan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" id="step-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Skanowanie urzadzenia</div>
+        <div class="card-sub">// nie odlaczaj urzadzenia podczas analizy</div>
+      </div>
+      <div class="warning-panel">
+        <div class="warning-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1L1 14h14L8 1z"/><path d="M8 6v4M8 11.5v.5"/></svg>
+        </div>
+        <div class="warning-text">
+          Upewnij sie, ze urzadzenie jest podlaczone i odblokowane.<br>
+          Android: Wlacz debugowanie USB w opcjach dewelopera.<br>
+          iOS: Zaufaj temu komputerowi na ekranie urzadzenia.
+        </div>
+      </div>
+      <div class="scan-area">
+        <div class="scan-ring-wrap">
+          <div class="scan-ring" id="scan-ring">
+            <svg id="scan-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <div class="scan-ring-anim" id="scan-ring-anim"></div>
+        </div>
+        <div style="max-width:360px;margin:0 auto">
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+          <div class="progress-label" id="progress-pct">0%</div>
+          <div class="scan-status-text" id="scan-status">Oczekiwanie na urzadzenie…</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goToStep(2)">Anuluj</button>
+        <button class="btn btn-blue" onclick="startScan()" id="start-btn">Start</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-panel" id="step-4">
+    <div class="stats-row">
+      <div class="stat-box blue"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Znaleziono</div></div>
+      <div class="stat-box green"><div class="stat-num" id="stat-ok">0</div><div class="stat-label">Do odzysku</div></div>
+      <div class="stat-box orange"><div class="stat-num" id="stat-partial">0</div><div class="stat-label">Czesciowe</div></div>
+      <div class="stat-box red"><div class="stat-num" id="stat-bad">0</div><div class="stat-label">Uszkodzone</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Wybierz pliki do przywrocenia</div>
+        <div class="card-sub">// zaznacz pliki — odzysk zapisuje dane lokalnie na dysku</div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterResults('all',this)">Wszystkie</button>
+        <button class="filter-btn" onclick="filterResults('recoverable',this)">Odzyskiwalne</button>
+        <button class="filter-btn" onclick="filterResults('partial',this)">Czesciowe</button>
+        <button class="filter-btn" onclick="filterResults('corrupted',this)">Uszkodzone</button>
+        <button class="select-all" onclick="selectAll()">Zaznacz wszystkie</button>
+      </div>
+      <div class="results-grid" id="results-list"></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goToStep(3)">Skanuj ponownie</button>
+        <button class="btn btn-success" onclick="startRecovery()">Przywroc zaznaczone</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step-panel" id="step-5">
+    <div class="card">
+      <div class="complete-screen">
+        <div class="complete-badge">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-6"/></svg>
+          Zakonczone
+        </div>
+        <div class="complete-title">Dane przywrocone</div>
+        <div class="complete-sub" id="complete-msg">Zapisano 0 plikow do folderu Pobrane.</div>
+
+        <div class="folder-info-box">
+          <div class="folder-info-icon">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M2 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+            </svg>
+          </div>
+          <div class="folder-info-text">
+            <div class="folder-info-label">Lokalizacja zapisu</div>
+            <div class="folder-info-path" id="folder-path">C:\Users\Uzytkownik\Downloads\Odzysk_2026-03-02</div>
+          </div>
+        </div>
+
+        <div class="complete-actions">
+          <button class="btn btn-outline" onclick="restartApp()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px">
+              <path d="M2 8a6 6 0 1 0 1.5-4M2 2v4h4"/>
+            </svg>
+            Nowy skan
+          </button>
+          <button class="btn btn-blue" onclick="showToast('Folder zostanie otwarty przez aplikacje desktopowa.')">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px">
+              <path d="M2 6a2 2 0 012-2h4l2 2h4a2 2 0 012 2v5a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+            </svg>
+            Otworz folder
+          </button>
+        </div>
+
+        <div class="complete-note">
+          Otwarcie folderu wymaga aplikacji desktopowej. W wersji webowej sciezka jest pokazana powyzej.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+  let selectedDevice = null, scanInterval = null, allResults = [], currentFilter = 'all', pendingDevice = null;
+
+  const deviceInfo = {
+    android: {
+      title: 'Android',
+      subtitle: 'Jak dziala odzyskiwanie danych?',
+      steps: [
+        { title: 'Polaczenie przez USB', desc: 'Podlacz telefon kablem USB do komputera. System wykrywa urzadzenie przez protokol <strong>ADB (Android Debug Bridge)</strong>.' },
+        { title: 'Autoryzacja', desc: 'Na ekranie telefonu pojawi sie pytanie o zaufanie komputerowi. Zatwierdz, aby umozliwic odczyt pamieci.' },
+        { title: 'Analiza systemu plikow', desc: 'Aplikacja skanuje obszary pamieci, w tym sektory oznaczone jako usuniete, gdzie dane moga nadal fizycznie istniec.' },
+        { title: 'Odzysk lokalny', desc: 'Wybrane pliki sa kopiowane wylacznie na Twoj dysk. Nic nie opuszcza komputera.' },
+      ],
+      req: ['Debugowanie USB wlaczone (Opcje dewelopera)', 'Kabel USB data (nie tylko ladujacy)', 'Android 8.0 lub nowszy', 'Odblokowany ekran podczas skanowania'],
+    },
+    ios: {
+      title: 'iOS / iPadOS',
+      subtitle: 'Jak dziala odzyskiwanie danych?',
+      steps: [
+        { title: 'Polaczenie przez USB lub iCloud', desc: 'Podlacz iPhone kablem Lightning / USB-C lub zaloguj sie do iCloud, aby przeskanowac kopie zapasowa.' },
+        { title: 'Autoryzacja', desc: 'Na urzadzeniu pojawi sie komunikat "Zaufaj temu komputerowi". Nalezy to potwierdzic kodem PIN.' },
+        { title: 'Analiza backupu lub pamieci', desc: 'Aplikacja analizuje lokalny backup iTunes lub bezposrednio pamiec urzadzenia w poszukiwaniu usunietch plikow.' },
+        { title: 'Odzysk lokalny', desc: 'Odzyskane pliki trafiaja do wskazanego folderu na Twoim komputerze. Brak transmisji zewnetrznej.' },
+      ],
+      req: ['iTunes zainstalowany (Windows) lub macOS Finder', 'Kabel Lightning lub USB-C (oryginalny lub certyfikowany)', 'iOS 13+ lub iPadOS 14+', 'Znajomosc kodu PIN urzadzenia'],
+    },
+  };
+
+  const mockFiles = [
+    { name: 'IMG_20241215_142301.jpg', type: 'img', size: '3.2 MB', date: '15.12.2024', status: 'recoverable' },
+    { name: 'VID_20241201_093045.mp4', type: 'vid', size: '128 MB', date: '01.12.2024', status: 'recoverable' },
+    { name: 'Kontakty_backup.vcf', type: 'contact', size: '42 KB', date: '22.11.2024', status: 'recoverable' },
+    { name: 'IMG_20241130_181520.heic', type: 'img', size: '5.8 MB', date: '30.11.2024', status: 'partial' },
+    { name: 'Umowa_zlecenie_Q3.pdf', type: 'doc', size: '890 KB', date: '10.10.2024', status: 'recoverable' },
+    { name: 'Wiadomosci_SMS_Nov.xml', type: 'msg', size: '156 KB', date: '28.11.2024', status: 'recoverable' },
+    { name: 'IMG_20241005_094230.jpg', type: 'img', size: '2.1 MB', date: '05.10.2024', status: 'corrupted' },
+    { name: 'Notatki_praca.txt', type: 'doc', size: '12 KB', date: '19.11.2024', status: 'partial' },
+    { name: 'Screenshot_2024-12-01.png', type: 'img', size: '1.4 MB', date: '01.12.2024', status: 'recoverable' },
+    { name: 'VID_20241120_201533.mov', type: 'vid', size: '340 MB', date: '20.11.2024', status: 'partial' },
+    { name: 'IMG_20240915_172240.jpg', type: 'img', size: '4.5 MB', date: '15.09.2024', status: 'corrupted' },
+    { name: 'backup_messages_oct.db', type: 'msg', size: '2.3 MB', date: '31.10.2024', status: 'recoverable' },
+  ];
+
+  const typeIcons = {
+    img: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="14" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M1 10l3.5-3 3 2.5 2-2 4 4.5"/></svg>`,
+    vid: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="10" height="10" rx="1.5"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>`,
+    msg: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 10c0 1.1-.9 2-2 2H3l-2 2V4c0-1.1.9-2 2-2h9c1.1 0 2 .9 2 2v6z"/></svg>`,
+    contact: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>`,
+    doc: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5l-3-4z"/><path d="M10 1v4h3"/></svg>`,
+  };
+
+  const scanSteps = [
+    [10,  '→ laczenie z urzadzeniem…'],
+    [22,  '→ wykryto urzadzenie — montowanie…'],
+    [34,  '→ analizowanie systemu plikow…'],
+    [48,  '→ skanowanie galerii i zdjec…'],
+    [61,  '→ odczytywanie wiadomosci SMS…'],
+    [74,  '→ przeszukiwanie kontaktow…'],
+    [85,  '→ analiza dokumentow i plikow…'],
+    [93,  '→ gleboka analiza sektorow…'],
+    [100, '→ skanowanie zakonczone'],
+  ];
+  let scanStep = 0;
+
+  // ── NAV
+  function setNav(btn, view) {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (view === 'history') showToast('Brak historii skanowan.');
+  }
+
+  function restartApp() {
+    selectedDevice = null;
+    document.querySelectorAll('.device-card').forEach(c => c.classList.remove('selected'));
+    const btn = document.getElementById('btn-step1');
+    btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none';
+    goToStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── MODAL
+  function openModal(type) {
+    pendingDevice = type;
+    const info = deviceInfo[type];
+    document.getElementById('modal-title').textContent = info.title;
+    document.getElementById('modal-subtitle').textContent = info.subtitle;
+
+    document.getElementById('modal-steps').innerHTML = info.steps.map((s, i) => `
+      <div class="modal-step">
+        <div class="modal-step-num">${i+1}</div>
+        <div class="modal-step-text"><strong>${s.title}</strong><br>${s.desc}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('modal-req').innerHTML = info.req.map(r => `
+      <div class="modal-req-item"><div class="req-dot"></div><span class="req-text">${r}</span></div>
+    `).join('');
+
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+  }
+
+  function closeModalDirect() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  function confirmDevice() {
+    selectedDevice = pendingDevice;
+    document.querySelectorAll('.device-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('card-' + selectedDevice).classList.add('selected');
+    const btn = document.getElementById('btn-step1');
+    btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+    closeModalDirect();
+  }
+
+  function toggleType(btn) { btn.classList.toggle('selected'); }
+
+  // ── WIZARD
+  function goToStep(n) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+    for (let i = 1; i <= 5; i++) {
+      const dot = document.getElementById('dot-' + i);
+      const c = document.getElementById('c' + i);
+      dot.classList.remove('active','done');
+      if (i < n) { dot.classList.add('done'); c.textContent = '✓'; }
+      else if (i === n) { dot.classList.add('active'); c.textContent = i; }
+      else { c.textContent = i; }
+    }
+    for (let i = 1; i <= 4; i++) document.getElementById('line-' + i).classList.toggle('done', i < n);
+    if (n === 3) resetScan();
+    if (n === 4) renderResults();
+  }
+
+  function resetScan() {
+    clearInterval(scanInterval);
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('progress-pct').textContent = '0%';
+    document.getElementById('scan-status').textContent = 'Oczekiwanie na urzadzenie…';
+    const ring = document.getElementById('scan-ring');
+    ring.classList.remove('scanning','done');
+    document.getElementById('scan-svg').innerHTML = `<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>`;
+    const btn = document.getElementById('start-btn');
+    btn.disabled = false; btn.textContent = 'Start';
+  }
+
+  function startScan() {
+    const btn = document.getElementById('start-btn');
+    btn.disabled = true; btn.textContent = 'Skanowanie…';
+    document.getElementById('scan-ring').classList.add('scanning');
+    scanStep = 0;
+    scanInterval = setInterval(() => {
+      if (scanStep >= scanSteps.length) {
+        clearInterval(scanInterval);
+        const ring = document.getElementById('scan-ring');
+        ring.classList.remove('scanning'); ring.classList.add('done');
+        document.getElementById('scan-svg').innerHTML = `<path d="M5 12l5 5L20 7"/>`;
+        setTimeout(() => goToStep(4), 700);
+        return;
+      }
+      const [pct, msg] = scanSteps[scanStep];
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-pct').textContent = pct + '%';
+      document.getElementById('scan-status').textContent = msg;
+      scanStep++;
+    }, 650);
+  }
+
+  // ── RESULTS
+  function renderResults() {
+    allResults = mockFiles;
+    document.getElementById('stat-total').textContent = allResults.length;
+    document.getElementById('stat-ok').textContent = allResults.filter(r => r.status === 'recoverable').length;
+    document.getElementById('stat-partial').textContent = allResults.filter(r => r.status === 'partial').length;
+    document.getElementById('stat-bad').textContent = allResults.filter(r => r.status === 'corrupted').length;
+    currentFilter = 'all';
+    document.querySelectorAll('.filter-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+    renderList();
+  }
+
+  function renderList() {
+    const filtered = currentFilter === 'all' ? allResults : allResults.filter(r => r.status === currentFilter);
+    document.getElementById('results-list').innerHTML = filtered.map((f, i) => `
+      <label class="result-item" style="animation-delay:${i * 0.03}s">
+        <input type="checkbox" ${f.status === 'recoverable' ? 'checked' : ''} />
+        <div class="result-thumb">${typeIcons[f.type] || typeIcons.doc}</div>
+        <div class="result-info">
+          <div class="result-name">${f.name}</div>
+          <div class="result-meta">${f.size} · usunieto ${f.date}</div>
+        </div>
+        <div class="result-status ${f.status}">${f.status === 'recoverable' ? 'OK' : f.status === 'partial' ? 'Czesc.' : 'Blad'}</div>
+      </label>
+    `).join('');
+  }
+
+  function filterResults(type, btn) {
+    currentFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList();
+  }
+
+  function selectAll() {
+    document.querySelectorAll('#results-list input[type="checkbox"]').forEach(cb => cb.checked = true);
+  }
+
+  function startRecovery() {
+    const checked = document.querySelectorAll('#results-list input[type="checkbox"]:checked').length;
+    if (checked === 0) { showToast('Zaznacz co najmniej jeden plik.'); return; }
+    showToast('Przywracanie ' + checked + ' plikow…');
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0,10).replace(/-/g,'_');
+    setTimeout(() => {
+      document.getElementById('complete-msg').textContent = `Zapisano ${checked} plikow do folderu ponizej.`;
+      document.getElementById('folder-path').textContent = `C:\\Users\\Uzytkownik\\Downloads\\Odzysk_${dateStr}`;
+      goToStep(5);
+    }, 1800);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // close modal on ESC
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+</script>
+</body>
+</html>
